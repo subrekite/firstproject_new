@@ -1,30 +1,23 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:firstproject_new/main.dart';
+import 'package:firstproject_new/screens/main.dart'; // Ensure this import is correct
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('WeatherApp renders correctly', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(WeatherApp()); // Use WeatherApp instead of MyApp
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that the WeatherHomePage is rendered.
+    expect(find.text('Weather App'), findsOneWidget); // AppBar title
+    expect(find.byIcon(Icons.menu), findsOneWidget); // Menu icon
+    expect(
+      find.byIcon(Icons.notifications),
+      findsOneWidget,
+    ); // Notifications icon
+    expect(find.byIcon(Icons.settings), findsOneWidget); // Settings icon
+    expect(
+      find.text('Welcome to the Weather App!'),
+      findsOneWidget,
+    ); // Homepage text
   });
 }

@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Add internet permission here -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Add location permissions here -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:label="firstproject_new"
         android:name="${applicationName}"
