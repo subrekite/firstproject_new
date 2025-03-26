@@ -1,111 +1,139 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/settings_provider.dart'; // Import the settings provider
+import 'package:package_info_plus/package_info_plus.dart';
+import '../services/theme_service.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
   @override
+  _SettingsScreenState createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  String _appVersion = "Loading...";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _appVersion = packageInfo.version;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final settingsProvider = Provider.of<SettingsProvider>(context);
+    final themeService = Provider.of<ThemeService>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Settings'),
-        automaticallyImplyLeading: true, // Back button
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          // Theme Selection
-          ListTile(
-            leading: Icon(Icons.color_lens),
-            title: Text('Theme'),
-            subtitle: Text('Change app theme'),
-            onTap: () {
-              settingsProvider.setTheme(
-                settingsProvider.theme == "Light" ? "Dark" : "Light",
-              );
-            },
-          ),
-          Divider(),
+      appBar: AppBar(title: const Text("Settings")),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildSettingCard(
+              icon: Icons.dark_mode,
+              title: "Dark Mode",
+              subtitle: "Enable or disable dark mode",
+              trailing: Switch(
+                value: themeService.isDarkMode,
+                onChanged: (bool value) {
+                  themeService.toggleTheme();
+                },
+              ),
+            ),
 
-          // Notifications
-          ListTile(
-            leading: Icon(Icons.notifications),
-            title: Text('Notifications'),
-            subtitle: Text('Enable or disable notifications'),
-            onTap: () {
-              settingsProvider.toggleNotifications();
-            },
-          ),
-          Divider(),
+            const SizedBox(height: 16),
 
-          // Temperature Units
-          ListTile(
-            leading: Icon(Icons.thermostat),
-            title: Text('Temperature Units'),
-            subtitle: Text('Switch between Celsius and Fahrenheit'),
-            onTap: () {
-              _showTemperatureUnitDialog(context, settingsProvider);
-            },
-          ),
-          Divider(),
+            _buildSettingCard(
+              icon: Icons.thermostat,
+              title: "Temperature Unit",
+              subtitle: "Switch between °C and °F",
+              trailing: Switch(
+                value: themeService.isFahrenheit,
+                onChanged: (bool value) {
+                  themeService.toggleTemperatureUnit();
+                },
+              ),
+            ),
 
-          // Location Settings
-          ListTile(
-            leading: Icon(Icons.location_on),
-            title: Text('Location'),
-            subtitle: Text('Change location settings'),
-            onTap: () {
-              settingsProvider.setLocation('New Location');
-            },
-          ),
-          Divider(),
+            const SizedBox(height: 16),
 
-          // About
-          ListTile(
-            leading: Icon(Icons.info),
-            title: Text('About'),
-            subtitle: Text('Learn more about the app'),
-            onTap: () {
-              debugPrint('About clicked');
-            },
-          ),
-        ],
+            _buildSettingCard(
+              icon: Icons.info,
+              title: "About App",
+              subtitle: "Version $_appVersion",
+              onTap: () {
+                showAboutDialog(
+                  context: context,
+                  applicationName: "Weather App",
+                  applicationVersion: _appVersion,
+                  applicationIcon: Icon(
+                    Icons.cloud,
+                    size: 50,
+                    color: Colors.blue,
+                  ),
+                  children: const [
+                    Text(
+                      "This app provides real-time weather updates and forecasts.",
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // Helper function to show temperature unit dialog
-  void _showTemperatureUnitDialog(
-    BuildContext context,
-    SettingsProvider settingsProvider,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Temperature Units'),
-          content: Text('Choose your preferred temperature unit:'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                settingsProvider.setTemperatureUnit('Celsius');
-                Navigator.pop(context);
-              },
-              child: Text('Celsius'),
-            ),
-            TextButton(
-              onPressed: () {
-                settingsProvider.setTemperatureUnit('Fahrenheit');
-                Navigator.pop(context);
-              },
-              child: Text('Fahrenheit'),
-            ),
-          ],
-        );
-      },
+  Widget _buildSettingCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(icon, size: 32, color: Colors.blue),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    ),
+                  ],
+                ),
+              ),
+              if (trailing != null) trailing,
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
